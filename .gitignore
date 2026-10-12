@@ -1,0 +1,15 @@
+# Données du laboratoire : confidentielles, jamais versionnées
+data/
+outputs/
+*.zip
+*.xlsx
+*.D/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Fichiers système
+.DS_Store
+Thumbs.db
