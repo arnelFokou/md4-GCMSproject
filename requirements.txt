@@ -1,3 +1,6 @@
 pandas
+numpy
+scipy
+openpyxl
 plotly
 streamlit
