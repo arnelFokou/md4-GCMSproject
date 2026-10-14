@@ -23,7 +23,7 @@ def calculer(batch, meta, concs, cible, n_ref):
 
 
 with st.sidebar:
-    root = Path(st.text_input("Dossier cache", "cache")).expanduser()
+    root = Path(st.text_input("Dossier des CSV (batch)", "outputs/20251103")).expanduser()
     meta = st.text_input("metadata.xlsx", "metadata.xlsx")
     concs_txt = st.text_input("Concentrations GAM-1 à GAM-8 (ppm)",
                               "0.025, 0.05, 0.1, 0.2, 0.5, 1, 2, 5")
@@ -87,12 +87,25 @@ with t4:
     st.write(f"Statut : **{r.statut}**")
     t, y = pl.lire_signal(batch / ech, r.mz_quant)
     tq, yq = pl.lire_signal(batch / ech, r.mz_qual)
-    rt = r.rt if r.rt == r.rt else float(ref.set_index("compose").loc[cmp_, "rt_ref"])
+    rt_ref = float(ref.set_index("compose").loc[cmp_, "rt_ref"])
+    rt = r.rt if r.rt == r.rt else rt_ref
+    st.write(f"Temps de rétention de référence : **{rt_ref:.3f} min**"
+             + (f" | temps trouvé dans l'échantillon : **{r.rt:.3f} min**" if r.rt == r.rt else ""))
     zone = np.abs(t - rt) < 0.4
     fig = go.Figure()
     fig.add_scatter(x=t[zone], y=y[zone], name=f"quantifiant {r.mz_quant}")
     fig.add_scatter(x=tq[zone], y=yq[zone], name=f"qualifiant {r.mz_qual}")
+    # Zone où le programme cherche le sommet du pic (±0,05 min autour de la référence)
+    fig.add_vrect(x0=rt_ref - pl.DEMI_FENETRE, x1=rt_ref + pl.DEMI_FENETRE,
+                  fillcolor="lightblue", opacity=0.25, line_width=0,
+                  annotation_text="zone de recherche")
+    # Tolérance d'acceptation : ±0,2 % du temps de référence
+    fig.add_vrect(x0=rt_ref * (1 - pl.TOL_RT), x1=rt_ref * (1 + pl.TOL_RT),
+                  fillcolor="orange", opacity=0.5, line_width=0,
+                  annotation_text="tolérance ±0,2 %")
+    fig.add_vline(x=rt_ref, line_dash="dot", line_color="black")
     if r.debut == r.debut:
-        fig.add_vrect(x0=r.debut, x1=r.fin, fillcolor="grey", opacity=0.2, annotation_text="intégration")
+        fig.add_vrect(x0=r.debut, x1=r.fin, fillcolor="grey", opacity=0.2, line_width=0,
+                      annotation_text="intégration")
     fig.update_layout(xaxis_title="Temps (min)", yaxis_title="Intensité")
     st.plotly_chart(fig, use_container_width=True)

@@ -37,7 +37,7 @@ st.caption("Comparez plusieurs fichiers CSV `mz_<canal>.csv` sur un même graphi
 
 with st.sidebar:
     st.header("Filtres")
-    root_text = st.text_input("Dossier cache", value="cache")
+    root_text = st.text_input("Dossier des CSV (batch)", value="outputs/20251103")
     root = Path(root_text).expanduser()
     scan_requested = st.button("Actualiser le cache", use_container_width=True)
 
